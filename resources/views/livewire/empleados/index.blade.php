@@ -208,9 +208,13 @@
         </div>
 
         {{-- PAGINACIÓN --}}
-        <div class="card-footerborder-top">
-            {{ $empleados->links() }}
+        <div class="card-footer border-top py-3">
+            <div class="d-flex justify-content-end">
+                {{ $empleados->links() }}
+            </div>
         </div>
+
+
     </div>
 
     @if ($showDeleteModal)
