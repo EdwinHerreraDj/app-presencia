@@ -1,0 +1,10 @@
+RewriteEngine on
+
+# Asegurar que el host coincide con tu dominio
+RewriteCond %{HTTP_HOST} ^(www\.)?area-privada\.rondatapasrestaurante\.es$ [NC]
+
+# Evitar redirección infinita si ya está dentro de "public"
+RewriteCond %{REQUEST_URI} !^/public/
+
+# Redirigir todo al subdirectorio "public"
+RewriteRule ^(.*)$ /public/$1 [L,QSA]
