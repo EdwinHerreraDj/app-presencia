@@ -13,7 +13,7 @@ class Index extends Component
 {
     use WithPagination;
 
-    protected $paginationTheme = 'tailwind';
+    protected $paginationTheme = 'bootstrap';
 
     /* ==========
         ESTADO UI
