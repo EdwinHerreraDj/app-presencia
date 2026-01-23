@@ -203,7 +203,7 @@
                                     Email <span class="text-muted">(no se puede actualizar)</span>
                                 </label>
                                 <input type="email" class="form-control shadow-sm" id="modalUserEmail" name="email"
-                                    disabled>
+                                    readonly>
                             </div>
 
                             <!-- Nueva Contraseña -->

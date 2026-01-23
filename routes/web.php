@@ -6,7 +6,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\FichajeController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ExportController;
 use Illuminate\Http\Request;
 use App\Exports\ResumenHorasExport;
@@ -44,8 +43,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/registrosFichajes/{empresaId}', [RoutingController::class, 'registrosFichajes'])->name('registrosFichajes');
     Route::get('/empresa/{empresaId}/alertas-fichajes', [RoutingController::class, 'verAlertasFichajes'])->name('alertas.fichajes');
     Route::delete('/incidencias/{empresaId}/limpiar', [IncidenciaController::class, 'limpiarAprobadasDescartadas'])->name('incidencias.limpiar');
-
-
 
 
     /* Rutas para fichar la hora de entrada */
