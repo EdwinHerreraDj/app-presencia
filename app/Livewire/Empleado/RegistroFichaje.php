@@ -19,6 +19,7 @@ class RegistroFichaje extends Component
     public bool $showModal = false;
     public string $modalEstado = 'loading'; // loading | success | error
     public string $modalMensaje = '';
+    public bool $redirigirAIncidencias = false;
 
     public function mount()
     {
@@ -35,33 +36,50 @@ class RegistroFichaje extends Component
         $this->modalEstado = 'loading';
         $this->modalMensaje = 'Registrando ' . ucfirst($tipo) . '…';
 
+        // Validar empresa
         if (!$this->empresa_id) {
             $this->setError('Debes seleccionar una empresa.');
             return;
         }
 
+        // Validar geolocalización (si no es válida la anulamos)
         if (!is_numeric($this->latitud) || !is_numeric($this->longitud)) {
-            $this->setError('No se pudo obtener la geolocalización.');
-            return;
+            $this->latitud = null;
+            $this->longitud = null;
         }
 
+        // Obtener empleado
         $empleado = $this->obtenerEmpleado();
         if (!$empleado) {
             return;
         }
 
+        // Control de espera entre fichajes
         if ($this->debeEsperar($empleado)) {
             return;
         }
 
+        // Buscar empresa
         $empresa = Empresa::find($this->empresa_id);
         if (!$empresa) {
             $this->setError('Empresa no válida.');
             return;
         }
 
-        $dentro = $this->estaDentroDelRango($empresa);
+        // Calcular si está dentro del rango SOLO si hay coordenadas
+        $dentro = false;
 
+        if ($this->latitud !== null && $this->longitud !== null) {
+            $dentro = $this->estaDentroDelRango($empresa);
+        }
+
+        // Si la geolocalización es estricta y no hay coordenadas → bloquear
+        if ($empleado->geolocalizacion_estricta && $this->latitud === null) {
+            $this->setError('La geolocalización es obligatoria para este empleado.');
+            return;
+        }
+
+        // Si es estricta y está fuera del rango → bloquear
         if ($empleado->geolocalizacion_estricta && !$dentro) {
             $this->setError('No estás dentro de la zona permitida.');
             return;
@@ -86,11 +104,12 @@ class RegistroFichaje extends Component
         $this->modalMensaje = 'Fichaje de ' . ucfirst($tipo) . ' registrado correctamente.';
     }
 
+
     /* =======================================================
      * MÉTODOS AUXILIARES
      * ======================================================= */
 
-    private function obtenerEmpleado()
+    public function obtenerEmpleado()
     {
         $correo = Session::get('user_email');
 
@@ -133,6 +152,21 @@ class RegistroFichaje extends Component
         return false;
     }
 
+    public function ubicacionBloqueada(): void
+    {
+        $this->showModal = true;
+        $this->modalEstado = 'error';
+        $this->modalMensaje = 'Has bloqueado la ubicación en el navegador.
+
+Debes activarla desde el icono 🔒 en la barra de direcciones.
+
+Si no puedes activarla, genera una incidencia para que el administrador valide tu fichaje manualmente.';
+
+        $this->redirigirAIncidencias = true;
+    }
+
+
+
     private function estaDentroDelRango($empresa): bool
     {
         $r = 6371000;
@@ -149,18 +183,28 @@ class RegistroFichaje extends Component
         return $distancia <= $empresa->radio;
     }
 
-    private function setError(string $mensaje): void
+    public function setError(string $mensaje): void
     {
+        $this->showModal = true;
         $this->modalEstado = 'error';
         $this->modalMensaje = $mensaje;
     }
 
+
     public function cerrarModal(): void
     {
         $this->showModal = false;
+
+        if ($this->redirigirAIncidencias) {
+            $this->redirect(route('incidencias'));
+            return;
+        }
+
         $this->modalEstado = 'loading';
         $this->modalMensaje = '';
     }
+
+
 
     public function render()
     {

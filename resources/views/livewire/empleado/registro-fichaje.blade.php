@@ -127,16 +127,24 @@
     {{-- SCRIPT GEOLOCALIZACIÓN --}}
     <script>
         function obtenerUbicacion(tipo) {
+            const component = Livewire.find('{{ $this->getId() }}');
+
             navigator.geolocation.getCurrentPosition(
                 pos => {
-                    const component = Livewire.find('{{ $this->getId() }}');
                     component.set('latitud', pos.coords.latitude);
                     component.set('longitud', pos.coords.longitude);
                     component.call('registrar', tipo);
                 },
-                () => {
-                    Livewire.find('{{ $this->getId() }}')
-                        .call('setError', 'Activa la ubicación para fichar.');
+                error => {
+
+                    if (error.code === error.PERMISSION_DENIED) {
+                        component.call('ubicacionBloqueada');
+                        return;
+                    }
+
+                    component.set('latitud', null);
+                    component.set('longitud', null);
+                    component.call('registrar', tipo);
                 }, {
                     enableHighAccuracy: true,
                     timeout: 10000,
@@ -145,10 +153,29 @@
             );
         }
 
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('redirigirIncidencias', () => {
+                setTimeout(() => {
+                    window.location.href = '/incidencias';
+                }, 4000); // Espera 4 segundos para que lean el mensaje
+            });
+        });
+
         setInterval(() => {
             const r = document.getElementById('reloj');
             if (r) r.innerText = new Date().toLocaleTimeString();
         }, 1000);
     </script>
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('recargarPagina', () => {
+                window.location.reload();
+            });
+        });
+    </script>
+
+
+
 
 </div>

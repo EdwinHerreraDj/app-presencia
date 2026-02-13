@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,13 +59,14 @@ class AuthenticatedSessionController extends Controller
 
         // Redirigir según el rol
         return match ($user->rol) {
+
             'encargado' => redirect()->route('terminal.fichaje'),
 
-            'admin', 'super_admin' => redirect()->route('empresas'),
+            'admin' => redirect()->route('empresas'),
 
             'empleado' => redirect()->route('fichaje'),
 
-            default => redirect()->route('auth.signin'),
+            default => redirect()->route('login'),
         };
     }
 

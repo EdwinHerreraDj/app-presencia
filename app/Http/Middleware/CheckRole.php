@@ -10,29 +10,10 @@ class CheckRole
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (!Auth::check()) {
-            return redirect()->route('auth.signin');
-        }
+        $user = Auth::user();
 
-        $userRole = Auth::user()->rol;
-        $routeName = $request->route()?->getName();
-
-        // ADMIN intentando entrar al fichaje de empleados
-        if ($userRole === 'admin' && $routeName === 'fichaje') {
-            return redirect()->route('empresas');
-        }
-
-        // ENCARGADO → solo terminal
-        if ($userRole === 'encargado') {
-            if (!str_starts_with($routeName, 'terminal.')) {
-                return redirect()->route('terminal.fichaje');
-            }
-            return $next($request);
-        }
-
-        // Otros roles: validar acceso normal
-        if (!in_array($userRole, $roles)) {
-            return redirect()->route('root');
+        if (!in_array($user->rol, $roles)) {
+            abort(403);
         }
 
         return $next($request);

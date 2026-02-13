@@ -12,13 +12,43 @@ use App\Exports\ResumenHorasExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\TerminalFichajeController;
+use Illuminate\Support\Facades\Auth;
+
 
 
 require __DIR__ . '/auth.php';
 
-Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
-    Route::get('', [RoutingController::class, 'index'])->name('root');
+Route::get('/', function (Request $request) {
 
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    $user = Auth::user();
+
+    // Defensa ante sesión corrupta o rol inválido
+    if (!$user || !in_array($user->rol, ['admin', 'empleado', 'encargado'])) {
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
+
+    return match ($user->rol) {
+        'encargado' => redirect()->route('terminal.fichaje'),
+        'admin'     => redirect()->route('empresas'),
+        'empleado'  => redirect()->route('fichaje'),
+    };
+});
+
+
+
+Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
+
+    /* Ruta principal para redirigir al dasboart */
+    Route::get('/empresas', [RoutingController::class, 'empresas'])->name('empresas');
 
     Route::get('users', [RoutingController::class, 'users'])->name('users')->middleware('checkRole:admin,superadmin');
     Route::get('users/create', [RoutingController::class, 'create'])->name('users.create');
@@ -28,7 +58,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     /* Rutas para empresas (Pagina Principal) */
-    Route::get('/empresas', [RoutingController::class, 'empresas'])->name('empresas')->middleware('checkRole:admin,superadmin');
+
     Route::post('/empresas/store', [EmpresaController::class, 'store'])->name('empresas.store');
     Route::put('/empresas/update/{id}', [EmpresaController::class, 'update'])->name('empresas.update');
     Route::delete('/empresas/delete/{id}', [EmpresaController::class, 'destroy'])->name('empresas.destroy');
