@@ -40,7 +40,7 @@ class FichajesExport implements FromCollection, WithHeadings, WithMapping
         return [
             'Empleado',
             'Teléfono',
-            'DNI',
+            'dni',
             'Fecha',
             'Hora',
             'Tipo',
@@ -59,7 +59,7 @@ class FichajesExport implements FromCollection, WithHeadings, WithMapping
         return [
             optional($fichaje->empleado)->nombre ?? 'Sin datos',
             optional($fichaje->empleado)->telefono ?? 'Sin datos',
-            optional($fichaje->empleado)->DNI ?? 'Sin datos',
+            optional($fichaje->empleado)->dni ?? 'Sin datos',
             $fechaHora->format('d/m/Y'),
             $fechaHora->format('H:i:s'),
             $fichaje->tipo,

@@ -103,7 +103,7 @@
 
                     <tr>
                         <td>{{ $fichaje->empleado->nombre }}</td>
-                        <td>{{ $fichaje->empleado->DNI }}</td>
+                        <td>{{ $fichaje->empleado->dni }}</td>
                         <td>{{ $fecha }}</td>
                         <td>{{ $hora }}</td>
                         <td>{{ ucfirst($fichaje->tipo) }}</td>

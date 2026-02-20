@@ -75,7 +75,7 @@ class RegistroFichaje extends Component
 
         // Si la geolocalización es estricta y no hay coordenadas → bloquear
         if ($empleado->geolocalizacion_estricta && $this->latitud === null) {
-            $this->setError('La geolocalización es obligatoria para este empleado.');
+            $this->setError('La geolocalización es obligatoria para este empleado. Actívala desde el icono 🔒 en la barra de direcciones.');
             return;
         }
 
@@ -93,7 +93,7 @@ class RegistroFichaje extends Component
             'fecha_hora'   => now(),
             'latitud'      => $this->latitud,
             'longitud'     => $this->longitud,
-            'dentro_rango' => $dentro,
+            'dentro_rango' => $this->latitud !== null ? $dentro : null,
             'dispositivo'  => request()->userAgent(),
             'navegador'    => request()->userAgent(),
             'ip'           => request()->ip(),

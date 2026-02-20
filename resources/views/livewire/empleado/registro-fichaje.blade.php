@@ -137,11 +137,15 @@
                 },
                 error => {
 
+                    // Usuario bloqueó ubicación
                     if (error.code === error.PERMISSION_DENIED) {
-                        component.call('ubicacionBloqueada');
+                        component.set('latitud', null);
+                        component.set('longitud', null);
+                        component.call('registrar', tipo);
                         return;
                     }
 
+                    // Otros errores
                     component.set('latitud', null);
                     component.set('longitud', null);
                     component.call('registrar', tipo);
