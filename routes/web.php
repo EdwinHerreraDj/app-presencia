@@ -111,15 +111,16 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
                 ->name('terminal.fichaje');
         });
 
-
-
+    Route::get('/fichaje/encargado', function () {
+        return view('encargado.fichajes');
+    })->name('fichaje.encargado')->middleware('auth', 'checkRole:encargado,admin,superadmin');
 
     /* Rutas para exportar en EXCEL */
     Route::get('/exportar-fichajes/{empresaId}', [ExportController::class, 'export'])->name('export.fichajes');
     Route::get('/empresa/{empresaId}/exportar-horas', function (Request $request, $empresaId) {
         // Usa el mismo controlador que ya tienes para calcular el resumen
         $controller = app(\App\Http\Controllers\FichajeController::class);
-        $datos = $controller->resumenHoras($request, $empresaId, true); // modo exportación
+        $datos = $controller->resumenHoras($request, $empresaId, true);
 
         return Excel::download(
             new ResumenHorasExport($datos['resumen'], $datos['empresa'], $datos['desde'], $datos['hasta']),

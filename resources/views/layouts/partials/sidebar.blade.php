@@ -18,7 +18,7 @@
         <ul class="navbar-nav" id="navbar-nav">
 
 
-            @if (session('user_role') != 'empleado')
+            @if (session('user_role') == 'admin' || session('user_role') == 'superadmin')
                 <li class="menu-title">Menu...</li>
 
                 <li class="nav-item">
@@ -50,7 +50,9 @@
                         <span class="nav-text"> Empleados </span>
                     </a>
                 </li>
-            @else
+            @endif
+
+            @if (session('user_role') == 'empleado')
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('fichaje') }}
 ">
@@ -76,6 +78,24 @@
                             <iconify-icon icon="mingcute:table-line"></iconify-icon>
                         </span>
                         <span class="nav-text"> Mi actividad </span>
+                    </a>
+                </li>
+            @endif
+
+            @if (session('user_role') == 'encargado')
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('fichaje.encargado') }}">
+                        <span class="nav-icon"></span>
+                        <iconify-icon icon="mingcute:home-3-line"></iconify-icon>
+                        <span class="nav-text"> Fichaje Manual </span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('terminal.fichaje') }}">
+                        <span class="nav-icon"></span>
+                        <iconify-icon icon="mingcute:table-line"></iconify-icon>
+                        <span class="nav-text"> Fichaje por DNI </span>
                     </a>
                 </li>
             @endif

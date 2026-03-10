@@ -14,11 +14,13 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'Alminares',
-            'email' => 'admin@alminares.es',
-            'password' => Hash::make('bb161077'),
-            'rol' => 'admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@alminares.es'],
+            [
+                'name' => 'Alminares',
+                'password' => Hash::make(env('ADMIN_PASSWORD')),
+                'rol' => 'admin',
+            ]
+        );
     }
 }
