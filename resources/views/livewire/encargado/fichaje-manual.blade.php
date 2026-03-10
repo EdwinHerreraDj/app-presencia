@@ -755,6 +755,32 @@
                     </div>
                 </div>
 
+                {{-- Buscador --}}
+                <div style="padding:14px 20px;border-bottom:1px solid #1a1d27;">
+                    <div style="position:relative;">
+                        <svg width="14" height="14" fill="none" stroke="#475569" stroke-width="2"
+                            viewBox="0 0 24 24"
+                            style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input type="text" wire:model.live.debounce.300ms="busquedaEmpleado"
+                            placeholder="Buscar empleado por nombre..."
+                            style="background:#0f1117;border:1px solid #1e2330;color:#f1f5f9;border-radius:10px;padding:9px 12px 9px 34px;font-size:13px;font-family:'Sora',sans-serif;width:100%;outline:none;transition:border-color .2s;"
+                            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#1e2330'">
+                        @if ($busquedaEmpleado)
+                            <button wire:click="$set('busquedaEmpleado','')"
+                                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#475569;display:flex;align-items:center;padding:2px;">
+                                <svg width="14" height="14" fill="none" stroke="currentColor"
+                                    stroke-width="2" viewBox="0 0 24 24">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
                 @if (count($empleados) > 0)
 
                     {{-- TABLA desktop --}}

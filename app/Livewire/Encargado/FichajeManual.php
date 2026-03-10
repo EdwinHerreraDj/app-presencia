@@ -24,6 +24,8 @@ class FichajeManual extends Component
     public $mostrarModalEliminar = false;
     public $fichajeAEliminar = null;
 
+    public $busquedaEmpleado = '';
+
     public function mount(): void
     {
         $this->empresas = Empresa::where('fichaje_activo', 1)->get();
@@ -118,16 +120,34 @@ class FichajeManual extends Component
             return;
         }
 
-        $empleados = Empleado::where('deshabilitado', 0)->get();
+        $this->cargarEmpleados();
+    }
+
+    public function updatedBusquedaEmpleado(): void
+    {
+        if ($this->empresaId) {
+            $this->cargarEmpleados();
+        }
+    }
+
+    private function cargarEmpleados(): void
+    {
+        $query = Empleado::where('deshabilitado', 0);
+
+        if (!empty($this->busquedaEmpleado)) {
+            $query->where('nombre', 'like', '%' . $this->busquedaEmpleado . '%');
+        }
+
+        $empleados = $query->get();
 
         $this->empleados = $empleados->map(function ($empleado) {
             $ultimo = Fichaje::where('empleado_id', $empleado->id)
+                ->where('empresa_id', $this->empresaId)
+                ->whereDate('fecha_hora', today())
                 ->orderByDesc('fecha_hora')
                 ->first();
 
-            $empleado->estado = ($ultimo &&
-                Carbon::parse($ultimo->fecha_hora)->isToday() &&
-                $ultimo->tipo === 'entrada')
+            $empleado->estado = ($ultimo && $ultimo->tipo === 'entrada')
                 ? 'dentro'
                 : 'fuera';
 
@@ -164,7 +184,7 @@ class FichajeManual extends Component
             : 'Salida registrada correctamente';
 
         $this->dispatch('notyf-success', message: $mensaje);
-        $this->updatedEmpresaId();
+        $this->cargarEmpleados();
 
         if ($this->mostrarFichajes) {
             $this->cargarFichajes();
