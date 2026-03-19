@@ -40,6 +40,13 @@ class Index extends Component
     public ?int $empleadoIdEliminar = null;
 
 
+    /* Propiedades para el QR */
+    public bool $showQrModal = false;
+    public ?int $qrEmpleadoId = null;
+    public string $qrEmpleadoNombre = '';
+    public string $qrImagenUrl = '';
+
+
     /* ==========
         VALIDACIÓN
     ========== */
@@ -233,6 +240,32 @@ class Index extends Component
             'deshabilitado',
             'geolocalizacion_estricta',
         ]);
+    }
+
+    /* METODOS PARA EL QR */
+    public function abrirQr(int $id): void
+    {
+        $empleado = Empleado::findOrFail($id);
+
+        if (!$empleado->qr_token) {
+            $empleado->generarQrToken();
+        }
+
+        $this->qrEmpleadoId     = $empleado->id;
+        $this->qrEmpleadoNombre = $empleado->nombre;
+        $this->qrImagenUrl      = route('empleados.qr', $empleado->id);
+        $this->showQrModal      = true;
+    }
+
+    public function regenerarQr(): void
+    {
+        $empleado = Empleado::findOrFail($this->qrEmpleadoId);
+        $empleado->generarQrToken();
+
+        // El ?t= fuerza al navegador a recargar la imagen sin caché
+        $this->qrImagenUrl = route('empleados.qr', $empleado->id) . '?t=' . time();
+
+        $this->dispatch('notify', type: 'success', message: 'QR regenerado correctamente.');
     }
 
     public function render()

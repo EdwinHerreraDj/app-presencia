@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 
 
@@ -69,7 +70,7 @@ class EmpleadoController extends Controller
         ]);
 
 
-        if ($request->filled('email')) { 
+        if ($request->filled('email')) {
             $rules['email'] = 'required|string|email|max:255|unique:users,email';
         }
 
@@ -124,5 +125,21 @@ class EmpleadoController extends Controller
         $empleado->delete();
 
         return redirect()->route('empleados')->with('success', 'Empleado eliminado correctamente.');
+    }
+
+    public function mostrarQr(int $id)
+    {
+        $empleado = Empleado::findOrFail($id);
+
+        if (!$empleado->qr_token) {
+            abort(404, 'Este empleado no tiene QR generado.');
+        }
+
+        $qr = QrCode::size(300)
+            ->errorCorrection('H')
+            ->generate(json_encode(['token' => $empleado->qr_token]));
+
+        return response($qr, 200)
+            ->header('Content-Type', 'image/svg+xml');
     }
 }

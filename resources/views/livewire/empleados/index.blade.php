@@ -186,6 +186,11 @@
                                             Editar
                                         </button>
 
+                                        <button wire:click="abrirQr({{ $empleado->id }})" type="button"
+                                            class="btn btn-sm btn-outline-primary">
+                                            QR
+                                        </button>
+
                                         <button wire:click="confirmarEliminacion({{ $empleado->id }})"
                                             class="btn btn-sm btn-danger">
                                             Eliminar
@@ -243,6 +248,49 @@
                         <button class="btn btn-danger" wire:click="eliminarConfirmado">
                             Sí, eliminar
                         </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($showQrModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5)">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">QR — {{ $qrEmpleadoNombre }}</h5>
+                        <button type="button" class="btn-close" wire:click="$set('showQrModal', false)">
+                        </button>
+                    </div>
+
+                    <div class="modal-body text-center py-4">
+                        <img src="{{ $qrImagenUrl }}" alt="QR {{ $qrEmpleadoNombre }}"
+                            class="img-fluid rounded border" style="max-width: 240px;">
+
+                        <p class="text-muted small mt-3 mb-0">
+                            El empleado puede mostrar este código en la terminal
+                            para registrar su entrada o salida.
+                        </p>
+                    </div>
+
+                    <div class="modal-footer justify-content-between">
+                        <button class="btn btn-outline-warning btn-sm" wire:click="regenerarQr"
+                            onclick="return confirm('¿Regenerar el QR? El código anterior dejará de funcionar.')">
+                            Regenerar QR
+                        </button>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ $qrImagenUrl }}" download="qr-{{ $qrEmpleadoNombre }}.png"
+                                class="btn btn-outline-primary btn-sm">
+                                Descargar
+                            </a>
+                            <button class="btn btn-outline-secondary btn-sm" wire:click="$set('showQrModal', false)">
+                                Cerrar
+                            </button>
+                        </div>
                     </div>
 
                 </div>

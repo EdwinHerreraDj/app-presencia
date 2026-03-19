@@ -68,6 +68,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/empleados/store', [EmpleadoController::class, 'store'])->name('empleados.store');
     Route::put('/empleados/update/{id}', [EmpleadoController::class, 'update'])->name('empleados.update');
     Route::delete('empleados/delete/{id}', [EmpleadoController::class, 'destroy'])->name('empleados.destroy');
+    Route::get('/empleados/{id}/qr', [EmpleadoController::class, 'mostrarQr'])
+        ->name('empleados.qr');
 
     /* Rutas de Registros de Fichaje */
     Route::get('/registrosFichajes/{empresaId}', [RoutingController::class, 'registrosFichajes'])->name('registrosFichajes');
@@ -114,6 +116,10 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/fichaje/encargado', function () {
         return view('encargado.fichajes');
     })->name('fichaje.encargado')->middleware('auth', 'checkRole:encargado,admin,superadmin');
+
+    Route::get('/terminal-qr', function () {
+        return view('encargado.fichaje-qr');
+    })->name('terminal.qr')->middleware('auth', 'checkRole:encargado,admin,superadmin');
 
     /* Rutas para exportar en EXCEL */
     Route::get('/exportar-fichajes/{empresaId}', [ExportController::class, 'export'])->name('export.fichajes');

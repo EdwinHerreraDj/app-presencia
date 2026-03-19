@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Empleado extends Model
 {
@@ -22,5 +23,12 @@ class Empleado extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function generarQrToken(): string
+    {
+        $this->qr_token = Str::uuid();
+        $this->save();
+        return $this->qr_token;
     }
 }
