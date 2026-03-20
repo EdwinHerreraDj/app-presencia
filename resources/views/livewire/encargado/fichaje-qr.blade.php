@@ -618,7 +618,7 @@
             qrScanner = new Html5Qrcode("qr-reader");
 
             qrScanner.start({
-                    facingMode: "user"
+                    facingMode: "environment"
                 }, {
                     fps: 10,
                     qrbox: {
