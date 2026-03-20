@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Empresa;
 use App\Models\Empleado;
 use App\Models\Fichaje;
+use Livewire\Attributes\On;
 
 class FichajeQr extends Component
 {
@@ -55,6 +56,7 @@ class FichajeQr extends Component
     }
 
     // Llamado desde JS cuando se detecta un QR
+    #[On('qr-escaneado')]
     public function procesarQr(string $contenido): void
     {
         // Reset
@@ -110,7 +112,8 @@ class FichajeQr extends Component
             ->first();
 
         if ($ultimoFichaje) {
-            $minutos = $ultimoFichaje->fecha_hora->diffInMinutes(now());
+
+            $minutos = (int) round($ultimoFichaje->fecha_hora->diffInMinutes(now()));
             if ($minutos < 60) {
                 $espera = 60 - $minutos;
                 $this->estado    = 'error';
@@ -149,6 +152,7 @@ class FichajeQr extends Component
     {
         $this->showModal = false;
         $this->estado    = 'idle';
+        $this->dispatch('fichaje-ok');
     }
 
     public function render()

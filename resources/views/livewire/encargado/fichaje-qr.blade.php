@@ -450,18 +450,17 @@
         </div>
 
         {{-- VISOR CÁMARA --}}
-        @if ($escaneando)
-            <div class="fq-card fu3">
-                <div class="fq-card-body">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                        <span class="dot-scan"></span>
-                        <span style="font-size:12px;color:#34d399;font-weight:600;">Cámara activa — apunta al QR del
-                            empleado</span>
-                    </div>
-                    <div id="qr-reader"></div>
+        {{-- VISOR CÁMARA --}}
+        <div class="fq-card fu3" style="{{ $escaneando ? '' : 'display:none;' }}">
+            <div class="fq-card-body">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                    <span class="dot-scan"></span>
+                    <span style="font-size:12px;color:#34d399;font-weight:600;">Cámara activa — apunta al QR del
+                        empleado</span>
                 </div>
+                <div id="qr-reader"></div>
             </div>
-        @endif
+        </div>
 
         {{-- RESULTADO ÚLTIMO FICHAJE --}}
         @if ($ultimoNombre)
@@ -552,8 +551,7 @@
 
     <script>
         let qrScanner = null;
-        let pausado = false;
-        let ctxAudio = null; // Se inicializa tras la primera interacción
+        let ctxAudio = null;
 
         function getAudioCtx() {
             if (!ctxAudio) {
@@ -569,7 +567,6 @@
                 const gain = ctx.createGain();
                 osc.connect(gain);
                 gain.connect(ctx.destination);
-
                 if (type === 'ok') {
                     osc.frequency.setValueAtTime(880, ctx.currentTime);
                     osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
@@ -590,6 +587,18 @@
             }
         }
 
+        function detenerEscanerFisico() {
+            return new Promise(resolve => {
+                if (qrScanner) {
+                    qrScanner.stop()
+                        .catch(() => {})
+                        .finally(() => resolve());
+                } else {
+                    resolve();
+                }
+            });
+        }
+
         function arrancarCamara() {
             const el = document.getElementById('qr-reader');
             if (!el) {
@@ -597,42 +606,41 @@
                 return;
             }
 
+            // Limpia instancia anterior si existe
+            if (qrScanner) {
+                qrScanner.stop().catch(() => {}).finally(() => {
+                    qrScanner = null;
+                    setTimeout(arrancarCamara, 200);
+                });
+                return;
+            }
+
             qrScanner = new Html5Qrcode("qr-reader");
 
-            Html5Qrcode.getCameras().then(cameras => {
-                if (!cameras || cameras.length === 0) {
-                    alert('No se encontró ninguna cámara.');
-                    return;
-                }
-
-                const camId = cameras.find(c =>
-                    c.label.toLowerCase().includes('back') ||
-                    c.label.toLowerCase().includes('rear') ||
-                    c.label.toLowerCase().includes('trasera')
-                )?.id ?? cameras[cameras.length - 1].id;
-
-                qrScanner.start(
-                    camId, {
-                        fps: 10,
-                        qrbox: {
-                            width: 250,
-                            height: 250
-                        },
-                        aspectRatio: 1.0
-                    },
-                    (decodedText) => {
-                        if (pausado) return;
-                        pausado = true;
-                        @this.procesarQr(decodedText);
+            qrScanner.start({
+                    facingMode: "user"
+                }, {
+                    fps: 10,
+                    qrbox: {
+                        width: 250,
+                        height: 250
                     }
-                ).catch(err => {
-                    console.error('Error al iniciar cámara:', err);
-                    alert('No se pudo acceder a la cámara. Comprueba los permisos.');
-                });
+                },
+                (decodedText) => {
+                    console.log('QR detectado:', decodedText);
 
-            }).catch(err => {
-                console.error('Error al obtener cámaras:', err);
-                alert('Error al acceder a la cámara: ' + err);
+                    // Para físicamente el escáner al detectar
+                    detenerEscanerFisico().then(() => {
+                        qrScanner = null;
+                        Livewire.dispatch('qr-escaneado', {
+                            contenido: decodedText
+                        });
+                    });
+                }
+            ).catch(err => {
+                qrScanner = null;
+                console.error('Error al iniciar cámara:', err);
+                alert('No se pudo acceder a la cámara: ' + err);
             });
         }
 
@@ -663,28 +671,19 @@
             Livewire.on('terminal-sound', e => playSound(e.type));
 
             Livewire.on('iniciar-camara', () => {
-                Livewire.hook('commit', ({
-                    succeed
-                }) => {
-                    succeed(() => setTimeout(arrancarCamara, 100));
-                });
-                setTimeout(arrancarCamara, 300);
+                setTimeout(arrancarCamara, 400);
             });
 
+            // Se dispara cuando el usuario pulsa Aceptar en el modal
+            // Vuelve a arrancar la cámara para el siguiente empleado
             Livewire.on('fichaje-ok', () => {
-                // La cámara sigue activa, solo despausa tras cerrar el modal
-                // El usuario pulsa Aceptar → cerrarModal → dispatch fichaje-ok
-                pausado = false;
+                setTimeout(arrancarCamara, 500);
             });
 
             Livewire.on('detener-camara', () => {
-                if (qrScanner) {
-                    qrScanner.stop().then(() => {
-                        qrScanner.clear();
-                        qrScanner = null;
-                        pausado = false;
-                    }).catch(() => {});
-                }
+                detenerEscanerFisico().then(() => {
+                    qrScanner = null;
+                });
             });
         });
     </script>

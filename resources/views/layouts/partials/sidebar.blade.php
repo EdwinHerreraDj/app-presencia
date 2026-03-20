@@ -84,18 +84,24 @@
 
             @if (session('user_role') == 'encargado')
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ route('terminal.fichaje') }}">
+                        <span class="nav-icon"></span>
+                        <iconify-icon icon="mingcute:barcode-scan-line"></iconify-icon>
+                        <span class="nav-text"> Fichaje por DNI </span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{{ route('fichaje.encargado') }}">
                         <span class="nav-icon"></span>
-                        <iconify-icon icon="mingcute:home-3-line"></iconify-icon>
+                        <iconify-icon icon="mingcute:badge-line"></iconify-icon>
                         <span class="nav-text"> Fichaje Manual </span>
                     </a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('terminal.fichaje') }}">
+                    <a class="nav-link" href="{{ route('terminal.qr') }}">
                         <span class="nav-icon"></span>
-                        <iconify-icon icon="mingcute:table-line"></iconify-icon>
-                        <span class="nav-text"> Fichaje por DNI </span>
+                        <iconify-icon icon="mingcute:qrcode-2-line"></iconify-icon>
+                        <span class="nav-text"> Fichaje por QR </span>
                     </a>
                 </li>
             @endif
