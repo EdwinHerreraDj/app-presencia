@@ -45,6 +45,7 @@ class Index extends Component
     public ?int $qrEmpleadoId = null;
     public string $qrEmpleadoNombre = '';
     public string $qrImagenUrl = '';
+    public string $qrToken = '';
 
 
     /* ==========
@@ -253,6 +254,7 @@ class Index extends Component
 
         $this->qrEmpleadoId     = $empleado->id;
         $this->qrEmpleadoNombre = $empleado->nombre;
+        $this->qrToken          = json_encode(['token' => $empleado->qr_token]); // ← añadir
         $this->qrImagenUrl      = route('empleados.qr', $empleado->id);
         $this->showQrModal      = true;
     }
@@ -262,7 +264,7 @@ class Index extends Component
         $empleado = Empleado::findOrFail($this->qrEmpleadoId);
         $empleado->generarQrToken();
 
-        // El ?t= fuerza al navegador a recargar la imagen sin caché
+        $this->qrToken     = json_encode(['token' => $empleado->qr_token]); // ← añadir
         $this->qrImagenUrl = route('empleados.qr', $empleado->id) . '?t=' . time();
 
         $this->dispatch('notify', type: 'success', message: 'QR regenerado correctamente.');

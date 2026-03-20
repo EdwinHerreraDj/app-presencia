@@ -11,6 +11,7 @@
             + Nuevo empleado
         </button>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     {{-- FORM --}}
     @if ($showForm)
@@ -267,8 +268,12 @@
                     </div>
 
                     <div class="modal-body text-center py-4">
-                        <img src="{{ $qrImagenUrl }}" alt="QR {{ $qrEmpleadoNombre }}"
-                            class="img-fluid rounded border" style="max-width: 240px;">
+
+                        {{-- Contenedor donde JS genera el QR en alta resolución --}}
+                        <div id="qr-canvas-container"
+                            style="display:inline-block;padding:16px;background:#fff;border-radius:12px;"
+                            data-token="{{ $qrToken }}" data-nombre="qr-{{ $qrEmpleadoNombre }}">
+                        </div>
 
                         <p class="text-muted small mt-3 mb-0">
                             El empleado puede mostrar este código en la terminal
@@ -283,10 +288,9 @@
                         </button>
 
                         <div class="d-flex gap-2">
-                            <a href="{{ $qrImagenUrl }}" download="qr-{{ $qrEmpleadoNombre }}.png"
-                                class="btn btn-outline-primary btn-sm">
-                                Descargar
-                            </a>
+                            <button class="btn btn-outline-primary btn-sm" onclick="descargarQr()">
+                                Descargar PNG
+                            </button>
                             <button class="btn btn-outline-secondary btn-sm" wire:click="$set('showQrModal', false)">
                                 Cerrar
                             </button>
@@ -297,6 +301,77 @@
             </div>
         </div>
     @endif
+
+    <script>
+        function generarQr() {
+            console.log('generarQr llamado');
+
+            const container = document.getElementById('qr-canvas-container');
+            console.log('container:', container);
+            if (!container) return;
+
+            const token = container.getAttribute('data-token');
+            console.log('token:', token);
+            if (!token) return;
+
+            console.log('QRCode disponible:', typeof QRCode);
+            if (typeof QRCode === 'undefined') return;
+
+            container.innerHTML = '';
+
+            new QRCode(container, {
+                text: token,
+                width: 280,
+                height: 280,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            console.log('QR generado, contenido:', container.innerHTML);
+        }
+
+        function descargarQr() {
+            const container = document.getElementById('qr-canvas-container');
+            if (!container) return;
+
+            const canvas = container.querySelector('canvas');
+            const img = container.querySelector('img');
+
+            let dataUrl = null;
+
+            if (canvas) {
+                dataUrl = canvas.toDataURL('image/png');
+            } else if (img) {
+                const c = document.createElement('canvas');
+                c.width = img.naturalWidth || 280;
+                c.height = img.naturalHeight || 280;
+                c.getContext('2d').drawImage(img, 0, 0);
+                dataUrl = c.toDataURL('image/png');
+            }
+
+            if (!dataUrl) {
+                alert('El QR aún no se ha generado. Espera un momento.');
+                return;
+            }
+
+            const nombre = container.getAttribute('data-nombre') || 'qr-empleado';
+            const link = document.createElement('a');
+            link.download = nombre + '.png';
+            link.href = dataUrl;
+            link.click();
+        }
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('morph.updated', () => {
+                setTimeout(generarQr, 100);
+            });
+        });
+
+        document.addEventListener('livewire:updated', () => {
+            setTimeout(generarQr, 100);
+        });
+    </script>
 
 
 </div>
